@@ -2,7 +2,8 @@
 #define _MY_PCAP_H
 
 #include <pcap.h>
-#include <stdio.h>
+#include <iostream>
+//#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>

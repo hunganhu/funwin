@@ -1,21 +1,21 @@
-SRCS=ftdparse.c my_pcap.c
+SRCS=ftdparse.cpp my_pcap.cpp
 
 EXECUTABLES=ftdparse
 
-CC=gcc
-CFLAGS=-g -Wall
+CC=g++
+CPPFLAGS=-g -Wall
 
-LDFLAGS=-lpcap
+LDFLAGS=-g -lpcap
 
-OBJS=$(SRCS:.c=.o)
+OBJS=$(SRCS:.cpp=.o)
 
 all: $(EXECUTABLES)
 
 $(EXECUTABLES): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $@  
+	$(CC) $(CPPFLAGS) $(OBJS) $(LDFLAGS) -o $@  
 
-.c.o: my_pcap.h
-	$(CC) $(CFLAGS) -c $< -o $@
+.cpp.o:
+	$(CC) $(CPPFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(EXECUTABLES) $(OBJS) *~
