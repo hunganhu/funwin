@@ -1,5 +1,7 @@
 #include "my_pcap.h"
 
+using namespace std;
+
 /*
  * print data in rows of 16 bytes: offset   hex   ascii
  *
@@ -114,7 +116,7 @@ int print_device_info(char *dev)
 				      &subnet_mask_raw,
 				      error_buffer);
   if (lookup_return_code == -1) {
-    printf("%s\n", error_buffer);
+    cerr << error_buffer << endl;
     return 1;
   }
 
@@ -151,9 +153,9 @@ int print_device_info(char *dev)
     return 1;
   }
   
-  printf("Device: %s\n", dev);
-  printf("IP address: %s\n", ip);
-  printf("Subnet mask: %s\n", subnet_mask);
+  cout << "Device: " << dev << endl;
+  cout << "IP address: " << ip << endl;
+  cout << "Subnet mask: " << subnet_mask << endl;
   
   return 0;
 }

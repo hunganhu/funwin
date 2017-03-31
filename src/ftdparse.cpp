@@ -1,5 +1,5 @@
 /*
- * ftdparse.c
+ * ftdparse.cc
  *
  * Sniffer example of TCP/IP packet capture using libpcap.
  * 
@@ -118,7 +118,7 @@
 #define APP_NAME		"FTDparse"
 
 #include "my_pcap.h"
-
+using namespace std;
 
 /*
  * print help text
@@ -126,11 +126,9 @@
 void
 print_app_usage(void)
 {
-  printf("Usage: %s [interface]\n", APP_NAME);
-  printf("\n");
-  printf("Options:\n");
-  printf("    interface    Listen on <interface> for packets.\n");
-  printf("\n");
+  cout << "Usage: " << APP_NAME << " [interface]" << endl;
+  cout << "Options:" << endl;
+  cout << "    interface    Listen on <interface> for packets." << endl;
   
   return;
 }
@@ -154,7 +152,7 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 	int size_tcp;
 	int size_payload;
 	
-	printf("\nPacket number %d:\n", count);
+	cout << "Packet number: " << count << endl;
 	count++;
 	
 	/* define ethernet header */
@@ -164,31 +162,31 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 	ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
 	size_ip = IP_HL(ip)*4;
 	if (size_ip < 20) {
-		printf("   * Invalid IP header length: %u bytes\n", size_ip);
+	  cout << "   * Invalid IP header length: " << size_ip << " bytes\n" << endl;
 		return;
 	}
-
+ 
 	/* print source and destination IP addresses */
-	printf("       From: %s\n", inet_ntoa(ip->ip_src));
-	printf("         To: %s\n", inet_ntoa(ip->ip_dst));
+	cout << "       From: " << inet_ntoa(ip->ip_src) << endl;
+	cout << "         To: " << inet_ntoa(ip->ip_dst) << endl;
 	
 	/* determine protocol */	
 	switch(ip->ip_p) {
 		case IPPROTO_TCP:
-			printf("   Protocol: TCP\n");
-			break;
+		  cout << "   Protocol: TCP" << endl;
+		  break;
 		case IPPROTO_UDP:
-			printf("   Protocol: UDP\n");
-			return;
+		  cout << "   Protocol: UDP" << endl;
+		  return;
 		case IPPROTO_ICMP:
-			printf("   Protocol: ICMP\n");
-			return;
+		  cout << "   Protocol: ICMP" << endl;
+		  return;
 		case IPPROTO_IP:
-			printf("   Protocol: IP\n");
-			return;
+		  cout << "   Protocol: IP" << endl;
+		  return;
 		default:
-			printf("   Protocol: unknown\n");
-			return;
+		  cout << "   Protocol: unknown" << endl;
+		  return;
 	}
 	
 	/*
@@ -199,12 +197,12 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 	tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);
 	size_tcp = TH_OFF(tcp)*4;
 	if (size_tcp < 20) {
-		printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
-		return;
+	  cout << "   * Invalid TCP header length: "<< size_tcp << " bytes" << endl ;
+	  return;
 	}
 	
-	printf("   Src port: %d\n", ntohs(tcp->th_sport));
-	printf("   Dst port: %d\n", ntohs(tcp->th_dport));
+	cout << "   Src port: " << ntohs(tcp->th_sport) << endl;
+	cout << "   Dst port: " << ntohs(tcp->th_dport) << endl;
 	
 	/* define/compute tcp payload (segment) offset */
 	payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);
@@ -217,8 +215,8 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 	 * treat it as a string.
 	 */
 	if (size_payload > 0) {
-		printf("   Payload (%d bytes):\n", size_payload);
-		print_payload(payload, size_payload);
+	  cout << "   Payload " << size_payload << " bytes)" << endl;
+	  print_payload(payload, size_payload);
 	}
 
 return;
@@ -242,7 +240,7 @@ int main(int argc, char **argv)
     dev = argv[1];
   }
   else if (argc > 2) {
-    fprintf(stderr, "error: unrecognized command-line options\n\n");
+    cerr <<  "error: unrecognized command-line options" << endl << endl;
     print_app_usage();
     exit(EXIT_FAILURE);
   }
@@ -250,31 +248,31 @@ int main(int argc, char **argv)
     /* find a capture device if not specified on command-line */
     dev = pcap_lookupdev(errbuf);
     if (dev == NULL) {
-      fprintf(stderr, "Couldn't find default device: %s\n", errbuf);
+      cerr << "Couldn't find default device: " << errbuf << endl;
       exit(EXIT_FAILURE);
     }
     print_device_info(dev);
     if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1) {
-      fprintf(stderr, "Couldn't get netmask for device %s: %s\n", dev, errbuf);
+      cerr << "Couldn't get netmask for device: " << dev << ": " << errbuf << endl;
       net = 0;
       mask = 0;
     }
 	
   }
-  
+   
   /* open capture device */
   handle = pcap_open_offline("alltraffic.pcap", errbuf);
   if (handle == NULL) {
-    fprintf(stderr, "Couldn't open file alltraffic.pcap: %s\n", errbuf);
+    cerr << "Couldn't open file alltraffic.pcap: " << errbuf << endl;
     return(2);
   }
   /* Compile and apply the filter */
   if (pcap_compile(handle, &fp, filter_exp, 0, net) == -1) {
-    fprintf(stderr, "Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(handle));
+    cerr << "Couldn't parse filter" << filter_exp <<" : " << pcap_geterr(handle) << endl;
     return(2);
   }
   if (pcap_setfilter(handle, &fp) == -1) {
-    fprintf(stderr, "Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
+    cerr << "Couldn't install filter" << filter_exp <<" : " << pcap_geterr(handle) << endl;
     return(2);
   }
   
@@ -283,7 +281,7 @@ int main(int argc, char **argv)
   //    pcap_loop(handle, -1, my_packet_handler, NULL);
   // start packet processing loop, just like live capture
   if (pcap_loop(handle, -1, got_packet, NULL) < 0) {
-    printf ("pcap_loop() failed: %s", pcap_geterr(handle));
+    cerr << "pcap_loop() failed: " << pcap_geterr(handle) << endl;
     return 1;
   }
 
@@ -291,7 +289,7 @@ int main(int argc, char **argv)
   pcap_freecode(&fp);
   pcap_close(handle);
   
-  printf("\nCapture complete.\n");
+  cout << endl << "Capture complete." << endl;
   
   return 0;
 }
