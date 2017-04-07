@@ -159,3 +159,19 @@ int print_device_info(char *dev)
   
   return 0;
 }
+
+int lzw_decode(u_char *packet_body, int packet_length, char *decoded_string, unsigned int &decoded_length)
+{
+  vector<u_short> compressed;
+  u_short *coded_int;
+
+  for (int i = 0; i < packet_length; i = i + 2) {
+    coded_int = (u_short *)(packet_body + i);
+    compressed.push_back(ntohs(*coded_int));
+  }
+  string decompressed = decompress(compressed.begin(), compressed.end());
+  decoded_length = decompressed.size();
+  strncpy (decoded_string, decompressed.c_str(), 8192);
+  
+  return 0;
+}

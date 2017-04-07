@@ -5,7 +5,7 @@ EXECUTABLES=ftdparse
 CC=g++
 CPPFLAGS=-g -Wall
 
-LDFLAGS=-g -lpcap
+LDFLAGS=-g -lpcap -L../lib -lCFFEXtraderapi -lssl -lcrypto
 
 OBJS=$(SRCS:.cpp=.o)
 

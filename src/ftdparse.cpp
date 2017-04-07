@@ -1,5 +1,5 @@
 /*
- * ftdparse.cc
+ * ftdparse.cpp
  *
  * Sniffer example of TCP/IP packet capture using libpcap.
  * 
@@ -76,7 +76,7 @@
  ****************************************************************************
  * 
  * Example compiler command-line for GCC:
- *   gcc -Wall -o ftdparse ftdparse.c -lpcap
+ *   g++ -Wall -o ftdparse ftdparse.cpp -lpcap
  * 
  ****************************************************************************
  *
@@ -151,8 +151,14 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 	int size_ip;
 	int size_tcp;
 	int size_payload;
+
+	struct ftd_header *packet_header;
+	struct ftd_extension *packet_extend;
+	u_char *packet_body;
+	char decoded_str[8192];
+	unsigned int size_decode;
 	
-	cout << "Packet number: " << count << endl;
+	cout << endl << "Packet number: " << count << endl;
 	count++;
 	
 	/* define ethernet header */
@@ -215,11 +221,38 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 	 * treat it as a string.
 	 */
 	if (size_payload > 0) {
-	  cout << "   Payload " << size_payload << " bytes)" << endl;
+	  cout << "   Payload (" << size_payload << " bytes)" << endl;
 	  print_payload(payload, size_payload);
+	} else {
+	  return;
 	}
-
-return;
+	
+	/* define FTD header */
+	packet_header = (struct ftd_header *)(payload);
+	int type_ftd = (int) packet_header->ftd_type;
+	int len_extend = (int) packet_header->ftd_extend_len;
+	uint16_t size_msg_text = ntohs(packet_header->msg_length);
+	
+	cout << "FTD type: " << type_ftd << endl;
+	cout << "FTD ext length: " << len_extend << endl;
+	cout << "FTD msg length: " << size_msg_text << endl;
+	if (packet_header->ftd_type == 0x00)
+	  return;
+	
+#define SIZE_FTD_HEADER sizeof(struct ftd_header)
+	
+	/* define/compute ip header offset */
+	packet_extend = (struct ftd_extension*)(payload + SIZE_FTD_HEADER);
+	packet_body = (u_char *) (payload + SIZE_FTD_HEADER + len_extend);
+	
+	if (size_msg_text > 0) {
+	  lzw_decode (packet_body, size_msg_text, decoded_str, size_decode);
+	  cout << "   Decode: (" << size_decode << " bytes)" << endl;
+	  cout << "   Decoded: " << decoded_str << endl;
+	  //print_payload(decoded_str, size_decode);
+	}
+	
+	return;
 }
 
 

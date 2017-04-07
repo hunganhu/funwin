@@ -3,8 +3,8 @@
 
 #include <pcap.h>
 #include <iostream>
-//#include <stdio.h>
 #include <string.h>
+#include <string>
 #include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
@@ -12,6 +12,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "fextradeapi.h"
+#include "lzwUtil.h"
 
 /* default snap length (maximum bytes per packet to capture) */
 #define SNAP_LEN 1518
@@ -73,6 +75,18 @@ struct sniff_tcp {
         u_short th_urp;                 /* urgent pointer */
 };
 
+struct ftd_header {
+  u_char ftd_type;           //FTD type
+  u_char ftd_extend_len;     //FTD extension length
+  u_short msg_length;        //FTD message length 
+};
+
+struct ftd_extension {
+  u_char ftd_extend_type;           //FTD extend type
+  u_char ftd_body_len;              //FTD extension length
+  char   *ftd_ext_body;             //FTD extendion body 
+};
+
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 
 void print_payload(const u_char *payload, int len);
@@ -82,5 +96,7 @@ void print_hex_ascii_line(const u_char *payload, int len, int offset);
 void print_app_usage(void);
 
 int print_device_info(char *dev);
+
+int lzw_decode(u_char *packet_body, int packet_length, char *decoded_string, unsigned int &decoded_length);
 
 #endif /*_MY_PCAP_H */
