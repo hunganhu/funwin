@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <zlib.h>
 #include "fextradeapi.h"
 #include "lzwUtil.h"
 
@@ -97,6 +98,7 @@ void print_app_usage(void);
 
 int print_device_info(char *dev);
 
-int lzw_decode(u_char *packet_body, int packet_length, char *decoded_string, unsigned int &decoded_length);
+int lzw_decode( char *decoded_string, unsigned long &decoded_length,
+		u_char *packet_body, int packet_length);
 
 #endif /*_MY_PCAP_H */

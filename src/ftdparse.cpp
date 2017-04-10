@@ -146,7 +146,7 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 	const struct sniff_ethernet *ethernet;  /* The ethernet header [1] */
 	const struct sniff_ip *ip;              /* The IP header */
 	const struct sniff_tcp *tcp;            /* The TCP header */
-	const u_char *payload;                  /* Packet payload */
+	u_char *payload;                  /* Packet payload */
 
 	int size_ip;
 	int size_tcp;
@@ -155,8 +155,10 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 	struct ftd_header *packet_header;
 	struct ftd_extension *packet_extend;
 	u_char *packet_body;
-	char decoded_str[8192];
-	unsigned int size_decode;
+	
+#define UNCOMPRESS_SIZE 16384
+	char uncompress_str[UNCOMPRESS_SIZE];
+	unsigned long size_uncompress = UNCOMPRESS_SIZE;
 	
 	cout << endl << "Packet number: " << count << endl;
 	count++;
@@ -223,11 +225,21 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 	if (size_payload > 0) {
 	  cout << "   Payload (" << size_payload << " bytes)" << endl;
 	  print_payload(payload, size_payload);
+	  /*
+	  int ret = lzw_decode (uncompress_str, size_uncompress,
+				payload, size_payload);
+
+//	  int ret = uncompress (uncompress_str, &size_uncompress,
+//				payload, size_payload);
+	  cout << "   Decode: (" << size_uncompress << " bytes)" << "ret: "<< ret << endl;
+	  print_payload((const u_char *)uncompress_str, size_uncompress);
+	  //	  cout << "   Decoded: " << uncompress_str << endl;
+	  */
 	} else {
 	  return;
 	}
-	
-	/* define FTD header */
+	/*
+	// define FTD header 
 	packet_header = (struct ftd_header *)(payload);
 	int type_ftd = (int) packet_header->ftd_type;
 	int len_extend = (int) packet_header->ftd_extend_len;
@@ -241,17 +253,19 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 	
 #define SIZE_FTD_HEADER sizeof(struct ftd_header)
 	
-	/* define/compute ip header offset */
+	// define FTD package extend and text
 	packet_extend = (struct ftd_extension*)(payload + SIZE_FTD_HEADER);
 	packet_body = (u_char *) (payload + SIZE_FTD_HEADER + len_extend);
 	
 	if (size_msg_text > 0) {
-	  lzw_decode (packet_body, size_msg_text, decoded_str, size_decode);
-	  cout << "   Decode: (" << size_decode << " bytes)" << endl;
-	  cout << "   Decoded: " << decoded_str << endl;
+	  memset (uncompress_str, 0, UNCOMPRESS_SIZE);
+	  int ret = uncompress (uncompress_str, &size_uncompress,
+				packet_body, size_msg_text);
+	  cout << "   Decode: (" << size_uncompress << " bytes)" << "ret: "<< ret << endl;
+	  cout << "   Decoded: " << uncompress_str << endl;
 	  //print_payload(decoded_str, size_decode);
 	}
-	
+	*/
 	return;
 }
 
